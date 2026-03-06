@@ -184,4 +184,4 @@ openclaw config set agents.defaults.sandbox.scope session
 - 检测工具: `06-工具集/security_detector.py`
 - 配置模板: `config/openclaw.json`
 - 检测清单: `07-检测清单/security-checklist-complete.md`
-- 项目地址: https://github.com/openclaw-security/agent-security-guide
+- 项目地址: https://github.com/hua1998/openclaw-security-guide
