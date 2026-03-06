@@ -1,0 +1,378 @@
+# OpenClaw 安全配置示例
+# 用途: 生产环境安全配置模板
+
+# ============================================
+# 1. 网关安全配置
+# ============================================
+gateway:
+  host: "127.0.0.1"  # 仅监听本地
+  port: 8080
+  
+  # TLS 配置
+  tls:
+    enabled: true
+    cert_file: "/etc/openclaw/certs/server.crt"
+    key_file: "/etc/openclaw/certs/server.key"
+    min_version: "1.2"
+    cipher_suites:
+      - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+      - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+  
+  # 认证配置
+  auth:
+    mode: "jwt"  # 选项: jwt, api_key, oauth2, saml
+    jwt:
+      secret: "${JWT_SECRET}"  # 从环境变量读取
+      expiry: "24h"
+      issuer: "openclaw-gateway"
+      audience: "openclaw-agents"
+    
+    # 多因素认证
+    mfa:
+      enabled: true
+      methods: ["totp", "webauthn"]
+      required_for_roles: ["admin", "security_admin"]
+  
+  # 请求限制
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+    burst_size: 10
+    
+  # IP 白名单
+  ip_whitelist:
+    enabled: true
+    allowed:
+      - "10.0.0.0/8"
+      - "172.16.0.0/12"
+      - "192.168.0.0/16"
+
+# ============================================
+# 2. 会话安全配置
+# ============================================
+session:
+  # 隔离级别
+  isolation:
+    mode: "per-channel-peer"  # 选项: none, per-channel, per-channel-peer
+    scope: "workspace"  # 选项: global, workspace, session
+  
+  # 会话超时
+  timeout:
+    idle: "30m"  # 空闲超时
+    absolute: "8h"  # 绝对超时
+  
+  # 并发控制
+  concurrency:
+    max_sessions_per_user: 3
+    max_agents_per_session: 5
+
+# ============================================
+# 3. 工具安全配置
+# ============================================
+tools:
+  # 默认工具 Profile
+  default_profile: "standard"
+  
+  # 工具 Profiles
+  profiles:
+    # 标准模式 - 适用于一般用户
+    standard:
+      allowed:
+        - "file_read"
+        - "file_write"
+        - "web_search"
+        - "browser"
+      blocked:
+        - "exec"
+        - "database"
+        - "ssh"
+    
+    # 严格模式 - 适用于高敏感环境
+    strict:
+      allowed:
+        - "file_read"
+      blocked:
+        - "file_write"
+        - "exec"
+        - "database"
+        - "ssh"
+        - "web_search"
+    
+    # 开发模式 - 适用于开发环境
+    development:
+      allowed:
+        - "file_read"
+        - "file_write"
+        - "exec"
+        - "web_search"
+      blocked:
+        - "database"
+        - "ssh"
+      # 执行命令限制
+      exec:
+        allowed_commands: ["ls", "cat", "grep", "npm", "pip"]
+        blocked_commands: ["rm", "sudo", "curl", "wget"]
+  
+  # 文件系统限制
+  filesystem:
+    workspace_only: true
+    allowed_paths:
+      - "/workspace"
+      - "/tmp"
+    blocked_paths:
+      - "/etc/passwd"
+      - "/etc/shadow"
+      - "/root"
+      - "/home"
+    max_file_size: "10MB"
+    
+  # 执行命令限制
+  exec:
+    security: "sandbox"  # 选项: allow, deny, ask, sandbox
+    sandbox_image: "openclaw/sandbox:latest"
+    timeout: "60s"
+    
+  # 数据库访问限制
+  database:
+    allowed_engines: ["postgresql", "mysql"]
+    require_ssl: true
+    max_connections: 10
+    query_timeout: "30s"
+    blocked_operations: ["DROP", "TRUNCATE", "DELETE"]  # 需要审批
+
+# ============================================
+# 4. 沙箱安全配置
+# ============================================
+sandbox:
+  enabled: true
+  mode: "container"  # 选项: none, session, container
+  
+  # 容器运行时
+  runtime:
+    engine: "docker"  # 选项: docker, gvisor, kata
+    image: "openclaw/sandbox:latest"
+    network_mode: "none"
+    
+  # 资源限制
+  resources:
+    cpu_limit: "1.0"
+    memory_limit: "1GB"
+    disk_limit: "10GB"
+    
+  # 安全选项
+  security:
+    read_only_rootfs: true
+    no_new_privileges: true
+    seccomp_profile: "./config/seccomp-default.json"
+    apparmor_profile: "docker-default"
+    capabilities:
+      drop: ["ALL"]
+      add: ["NET_BIND_SERVICE"]
+
+# ============================================
+# 5. 网络安全配置
+# ============================================
+network:
+  # 出站连接控制
+  egress:
+    mode: "whitelist"  # 选项: allow, block, whitelist
+    allowed_domains:
+      - "api.openai.com"
+      - "api.anthropic.com"
+      - "pypi.org"
+      - "registry.npmjs.org"
+    blocked_domains:
+      - "*.internal.company.com"
+      - "localhost"
+      - "127.0.0.1"
+    
+  # 端口限制
+  ports:
+    allowed: [80, 443, 53]
+    blocked: [22, 3306, 5432, 6379, 9200]
+    
+  # 协议限制
+  protocols:
+    allowed: ["https", "dns"]
+    blocked: ["ftp", "telnet", "smtp"]
+
+# ============================================
+# 6. 审计日志配置
+# ============================================
+audit:
+  enabled: true
+  level: "detailed"  # 选项: basic, detailed, debug
+  
+  # 存储配置
+  storage:
+    type: "file"  # 选项: file, database, elasticsearch
+    path: "/var/log/openclaw/audit.log"
+    max_size: "100MB"
+    max_files: 10
+    retention_days: 90
+    
+  # 日志内容
+  events:
+    - "authentication"
+    - "authorization"
+    - "tool_execution"
+    - "file_access"
+    - "configuration_change"
+    - "security_alert"
+    
+  # 敏感字段脱敏
+  masking:
+    enabled: true
+    fields:
+      - "password"
+      - "token"
+      - "api_key"
+      - "secret"
+      - "credit_card"
+    mask_pattern: "***REDACTED***"
+
+# ============================================
+# 7. 监控告警配置
+# ============================================
+monitoring:
+  enabled: true
+  
+  # 指标收集
+  metrics:
+    enabled: true
+    interval: "30s"
+    retention: "30d"
+    
+  # 告警规则
+  alerts:
+    # 认证失败告警
+    - name: "authentication_failure"
+      condition: "auth_failures > 5 in 5m"
+      severity: "high"
+      channels: ["email", "slack"]
+      
+    # 异常工具使用告警
+    - name: "suspicious_tool_usage"
+      condition: "blocked_tool_attempts > 3 in 10m"
+      severity: "critical"
+      channels: ["email", "slack", "pagerduty"]
+      
+    # 高权限操作告警
+    - name: "privileged_operation"
+      condition: "elevated_operations > 0"
+      severity: "medium"
+      channels: ["email"]
+      
+    # 沙箱逃逸告警
+    - name: "sandbox_escape_attempt"
+      condition: "sandbox_violations > 0"
+      severity: "critical"
+      channels: ["email", "slack", "pagerduty"]
+      auto_block: true
+      
+    # 数据泄露告警
+    - name: "data_exfiltration"
+      condition: "large_outbound_transfer > 100MB in 1h"
+      severity: "high"
+      channels: ["email", "slack"]
+
+# ============================================
+# 8. 审批流程配置
+# ============================================
+approval:
+  enabled: true
+  
+  # 需要审批的操作
+  required_for:
+    - operation: "database_write"
+      min_approvers: 1
+      approver_roles: ["dba", "admin"]
+      
+    - operation: "exec_command"
+      min_approvers: 1
+      approver_roles: ["security_admin", "admin"]
+      
+    - operation: "config_change"
+      min_approvers: 2
+      approver_roles: ["security_admin", "admin"]
+      
+    - operation: "tool_install"
+      min_approvers: 1
+      approver_roles: ["security_admin"]
+  
+  # 审批超时
+  timeout: "24h"
+  
+  # 紧急审批
+  emergency:
+    enabled: true
+    bypass_roles: ["security_admin"]
+    auto_escalate_after: "1h"
+
+# ============================================
+# 9. 敏感数据保护
+# ============================================
+data_protection:
+  # PII 检测
+  pii_detection:
+    enabled: true
+    patterns:
+      - name: "credit_card"
+        regex: "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b"
+        action: "block"
+      - name: "ssn"
+        regex: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+        action: "mask"
+      - name: "email"
+        regex: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+        action: "mask"
+  
+  # 内容过滤
+  content_filter:
+    enabled: true
+    blocked_keywords:
+      - "password"
+      - "secret"
+      - "private_key"
+    
+  # 数据脱敏
+  masking:
+    enabled: true
+    rules:
+      - type: "regex"
+        pattern: "password:\\s*\\S+"
+        replacement: "password: ***"
+
+# ============================================
+# 10. 供应链安全
+# ============================================
+supply_chain:
+  # Skills 安全
+  skills:
+    # 签名验证
+    signature_verification:
+      enabled: true
+      trusted_keys: ["./keys/openclaw-trusted.gpg"]
+      
+    # 白名单
+    whitelist:
+      enabled: true
+      allowed_sources:
+        - "https://github.com/openclaw/"
+        - "https://registry.openclaw.io/"
+      
+    # 扫描配置
+    scanning:
+      enabled: true
+      scanners:
+        - "malware"
+        - "secrets"
+        - "vulnerabilities"
+      
+  # 依赖检查
+  dependencies:
+    enabled: true
+    check_vulnerabilities: true
+    allowed_sources:
+      - "https://pypi.org"
+      - "https://registry.npmjs.org"

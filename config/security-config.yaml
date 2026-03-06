@@ -1,0 +1,85 @@
+# OpenClaw 安全配置模板
+# 用途：复制并修改此配置
+
+version: "3.0"
+environment: production
+
+# 能力等级配置
+capability:
+  default_level: L2_standard  # L1_basic / L2_standard / L3_advanced
+
+# 命令控制
+commands:
+  whitelist_file: commands/whitelist.yaml
+  blacklist_file: commands/blacklist.yaml
+  graylist_file: commands/graylist.yaml
+
+# 沙箱配置
+sandbox:
+  enabled: true
+  runtime: docker
+  mode: session  # session / agent / shared
+  scope: workspace
+  resource_limits:
+    cpus: 2
+    memory: 2G
+    pids: 100
+
+# 网络策略
+network:
+  mode: whitelist
+  allowed_domains:
+    - api.openclaw.ai
+    - open.feishu.cn
+  allowed_ips:
+    - 127.0.0.0/8
+    - 10.0.0.0/8
+
+# 审计日志
+audit:
+  enabled: true
+  format: json
+  destination:
+    - type: file
+      path: /var/log/openclaw/audit.log
+    - type: syslog
+      host: siem.example.com
+      port: 514
+  retention:
+    days: 90
+    max_size: 10GB
+
+# 限流配置
+rate_limit:
+  commands_per_minute: 60
+  api_calls_per_minute: 100
+  concurrent_sessions: 10
+
+# 审批流程
+approval:
+  enabled: true
+  approvers_file: approvers.yaml
+  auto_approve_rate_target: 70%
+
+# 监控告警
+monitoring:
+  enabled: true
+  metrics_file: monitoring.yaml
+  alerts_file: alerts.yaml
+
+# 提示词防护
+prompt_security:
+  injection_detection: true
+  input_filtering: true
+  output_validation: true
+
+# 数据保护
+data_protection:
+  masking_enabled: true
+  encryption_enabled: true
+
+# 供应链安全
+supply_chain:
+  skill_scan_enabled: true
+  dependency_scan_enabled: true
+  whitelist_enabled: true

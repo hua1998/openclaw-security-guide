@@ -1,0 +1,95 @@
+{
+  "gateway": {
+    "host": "127.0.0.1",
+    "port": 8080,
+    "auth": {
+      "mode": "jwt",
+      "token_expiry": "24h"
+    }
+  },
+  "session": {
+    "dmScope": "global"
+  },
+  "tools": {
+    "profile": "standard",
+    "deny": [],
+    "fs": {
+      "workspaceOnly": false
+    },
+    "exec": {
+      "security": "allow",
+      "ask": "never"
+    },
+    "elevated": {
+      "enabled": true
+    }
+  },
+  "agents": {
+    "default": {
+      "permission_level": "standard",
+      "sandbox": {
+        "mode": "off",
+        "scope": "shared",
+        "workspace_access": "rw"
+      },
+      "allowed_tools": [
+        "file_read",
+        "file_write",
+        "web_search",
+        "browser"
+      ],
+      "blocked_tools": [
+        "ssh",
+        "database"
+      ]
+    },
+    "defaults": {
+      "sandbox": {
+        "mode": "off",
+        "scope": "shared",
+        "workspaceAccess": "rw",
+        "docker": {
+          "network": "host"
+        }
+      }
+    }
+  },
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "audit": true,
+      "dmPolicy": "open",
+      "rate_limit": {
+        "requests_per_minute": 60
+      },
+      "groups": {
+        "general": {
+          "requireMention": false
+        }
+      }
+    }
+  },
+  "security": {
+    "audit_logging": {
+      "enabled": true,
+      "destination": "file",
+      "path": "/var/log/openclaw/audit.log",
+      "retention_days": 90
+    },
+    "sensitive_data": {
+      "mask_in_logs": true,
+      "patterns": [
+        "sk-[a-zA-Z0-9]{20,}",
+        "[0-9]{18}",
+        "1[3-9][0-9]{9}"
+      ]
+    },
+    "network": {
+      "allow_external": false,
+      "whitelist": [
+        "api.openclaw.ai",
+        "skills.sh"
+      ]
+    }
+  }
+}

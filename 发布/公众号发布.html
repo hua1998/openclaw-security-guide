@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent 安全治理指南</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 30px 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        .header h1 { margin: 0 0 10px 0; font-size: 24px; }
+        .header .version { background: #e94560; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card-title { color: #1a1a2e; font-size: 18px; font-weight: bold; margin-bottom: 15px; border-left: 4px solid #e94560; padding-left: 12px; }
+        .feature { display: flex; align-items: center; margin: 10px 0; }
+        .feature-icon { width: 40px; height: 40px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 20px; }
+        .feature-text { flex: 1; }
+        .feature-text strong { display: block; color: #333; }
+        .feature-text span { color: #666; font-size: 13px; }
+        .module-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .module { background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center; font-size: 13px; color: #333; }
+        .highlight { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .highlight-title { font-weight: bold; color: #856404; margin-bottom: 8px; }
+        .trend { border-left: 3px solid #28a745; padding-left: 15px; margin: 15px 0; }
+        .trend-title { font-weight: bold; color: #28a745; }
+        .qr-section { text-align: center; padding: 20px; background: #f8f9fa; border-radius: 12px; }
+        .qr-placeholder { width: 150px; height: 150px; background: #ddd; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #666; font-size: 12px; }
+        .stat { text-align: center; padding: 15px; }
+        .stat-num { font-size: 32px; font-weight: bold; color: #e94560; }
+        .stat-label { color: #666; font-size: 13px; }
+        .footer { text-align: center; color: #999; font-size: 12px; padding: 20px; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; color: #555; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>AI Agent 安全治理指南</h1>
+    <span class="version">v0.6.3</span>
+    <p style="margin-top: 15px;">让 AI Agent 安全可控</p>
+</div>
+<div class="card">
+    <div class="card-title">这是什么？</div>
+    <p>针对高权限 AI Agent（如 OpenClaw）的<strong>安全治理完整方案</strong>，覆盖事前防御、事中监控、事后审计。</p>
+    <div class="highlight">
+        <div class="highlight-title">核心理念</div>
+        日常零摩擦 · 高危必确认 · 每晚显性化巡检 · 默认零信任
+    </div>
+</div>
+<div class="card">
+    <div class="card-title">核心功能</div>
+    <div class="feature"><div class="feature-icon">X</div><div class="feature-text"><strong>红线/黄线管理</strong><span>危险操作自动拦截</span></div></div>
+    <div class="feature"><div class="feature-icon">X</div><div class="feature-text"><strong>Skill 安全审计</strong><span>安装前自动检查</span></div></div>
+    <div class="feature"><div class="feature-icon">X</div><div class="feature-text"><strong>每日自动巡检</strong><span>13项安全指标全覆盖</span></div></div>
+    <div class="feature"><div class="feature-icon">X</div><div class="feature-text"><strong>Git 灾备</strong><span>配置自动备份恢复</span></div></div>
+</div>
+<div class="card">
+    <div class="card-title">适用谁？</div>
+    <ul><li>使用 OpenClaw 等高权限 AI Agent 的开发者</li><li>需要自动化运维的企业安全团队</li><li>关注 AI 安全的研究者</li><li>Web3/金融场景团队</li></ul>
+</div>
+<div class="card">
+    <div class="card-title">10大模块</div>
+    <div class="module-grid">
+        <div class="module">01 基础安全</div><div class="module">02 应用安全</div>
+        <div class="module">03 网络运营</div><div class="module">04 事件响应</div>
+        <div class="module">05 容器安全</div><div class="module">06 办公安全</div>
+        <div class="module">07 行为安全</div><div class="module">08 新型风险</div>
+        <div class="module">09 红蓝对抗</div><div class="module">10 实战演练</div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-title">领域趋势</div>
+    <div class="trend"><div class="trend-title">OWASP 智能体安全 Top 10</div><p style="color:#666;font-size:13px;">目标劫持、工具滥用、供应链漏洞、提示词注入</p></div>
+    <div class="trend"><div class="trend-title">技术演进</div><p style="color:#666;font-size:13px;">零信任 + 持续验证 + 自动巡检</p></div>
+</div>
+<div class="card">
+    <div class="card-title">快速开始</div>
+    <p><strong>一键评估：</strong>发送评估Prompt给AI</p>
+    <p><strong>本地：</strong>git clone + python tools/security_detector.py</p>
+</div>
+<div class="card">
+    <div class="card-title">数据</div>
+    <div style="display:flex;justify-content:space-around;">
+        <div class="stat"><div class="stat-num">10+</div><div class="stat-label">模块</div></div>
+        <div class="stat"><div class="stat-num">100+</div><div class="stat-label">规则</div></div>
+        <div class="stat"><div class="stat-num">50+</div><div class="stat-label">文档</div></div>
+    </div>
+</div>
+<div class="qr-section">
+    <div class="qr-placeholder">[二维码]</div>
+    <p>扫码关注「小东安全日记」</p>
+</div>
+<div class="footer">
+    <p>286402937@qq.com</p>
+    <p>Gitee: gitee.com/caidongyun/agent-security-guide</p>
+</div>
+</body>
+</html>

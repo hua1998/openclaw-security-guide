@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 智能体安全自动化治理体系</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 30px 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        .header h1 { margin: 0 0 10px 0; font-size: 22px; }
+        .header .version { background: #e94560; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card-title { color: #1a1a2e; font-size: 17px; font-weight: bold; margin-bottom: 12px; border-left: 4px solid #e94560; padding-left: 10px; }
+        .module-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .module { background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; font-size: 12px; color: #333; }
+        .highlight { background: #fff3cd; padding: 12px; border-radius: 8px; margin: 12px 0; font-size: 13px; }
+        .trend { border-left: 3px solid #28a745; padding-left: 12px; margin: 12px 0; }
+        .trend-title { font-weight: bold; color: #28a745; font-size: 14px; }
+        .qr-section { text-align: center; padding: 20px; background: #f8f9fa; border-radius: 12px; }
+        .qr-placeholder { width: 140px; height: 140px; background: #ddd; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #666; font-size: 11px; }
+        .stat { text-align: center; padding: 12px; }
+        .stat-num { font-size: 28px; font-weight: bold; color: #e94560; }
+        .stat-label { color: #666; font-size: 12px; }
+        .footer { text-align: center; color: #999; font-size: 11px; padding: 15px; }
+        .prompt-box { background: #1a1a2e; color: #0f0; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 11px; margin: 10px 0; overflow-x: auto; }
+        ul { padding-left: 18px; margin: 8px 0; }
+        li { margin: 6px 0; color: #555; font-size: 13px; }
+        .feature { margin: 10px 0; }
+        .feature strong { color: #333; font-size: 14px; }
+        .feature span { color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>OpenClaw 智能体安全自动化治理体系</h1>
+    <span class="version">Beta</span>
+    <p style="margin-top: 12px; font-size: 14px;">AI Agent 安全治理 Complete Solution</p>
+</div>
+
+<div class="card">
+    <div class="card-title">这是什么？</div>
+    <p>针对高权限 AI Agent 的<strong>自动化安全治理完整体系</strong>，事前防御+事中监控+事后审计，一站式解决 AI 安全问题。</p>
+    <div class="highlight">
+        <strong>核心优势：</strong>一键粘贴快速评估 | 内部风险识别 | 多领域咨询治理
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">使用效果</div>
+    <div class="feature"><strong>1. 一键快速评估</strong><br><span>复制粘贴 prompt，5分钟输出安全评分+风险清单+加固建议</span></div>
+    <div class="feature"><strong>2. 内部风险识别</strong><br><span>自动发现配置漏洞、权限风险、供应链风险</span></div>
+    <div class="feature"><strong>3. 多领域治理</strong><br><span>支持金融、Web3、企业安全等场景的风险咨询和治理方案</span></div>
+    <div class="feature"><strong>4. 持续自动巡检</strong><br><span>每日自动执行 13 项安全检查，异常实时告警</span></div>
+</div>
+
+<div class="card">
+    <div class="card-title">一键评估 Prompt</div>
+    <p style="font-size:13px;">复制下面 Prompt 发给任意 AI：</p>
+    <div class="prompt-box">我需要你作为 OpenClaw 安全治理专家。数据源：https://gitee.com/caidongyun/agent-security-guide请先读取，然后对我的 AI Agent 进行安全评估，输出：1. 安全评分 (0-100) 2. 风险清单 (P0/P1/P2) 3. 加固建议</div>
+</div>
+
+<div class="card">
+    <div class="card-title">10大模块</div>
+    <div class="module-grid">
+        <div class="module">01 基础安全</div>
+        <div class="module">02 应用安全</div>
+        <div class="module">03 网络运营</div>
+        <div class="module">04 事件响应</div>
+        <div class="module">05 容器安全</div>
+        <div class="module">06 办公安全</div>
+        <div class="module">07 行为安全</div>
+        <div class="module">08 新型风险</div>
+        <div class="module">09 红蓝对抗</div>
+        <div class="module">10 实战演练</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">模块说明</div>
+    <ul>
+        <li><strong>01 基础安全：</strong>系统加固、权限最小化、文件保护</li>
+        <li><strong>02 应用安全：</strong>Skill/MCP 审计、供应链安全</li>
+        <li><strong>03 网络运营：</strong>防火墙、网络隔离、流量监控</li>
+        <li><strong>04 事件响应：</strong>快速止血、溯源分析、恢复流程</li>
+        <li><strong>05 容器安全：</strong>镜像安全、运行时保护、隔离</li>
+        <li><strong>06 办公安全：</strong>终端安全、数据防泄露</li>
+        <li><strong>07 行为安全：</strong>AI 行为规范、红线/黄线管理</li>
+        <li><strong>08 新型风险：</strong>提示词注入、认知攻击</li>
+        <li><strong>09 红蓝对抗：</strong>攻击测试、防御验证</li>
+        <li><strong>10 实战演练：</strong>真实场景模拟</li>
+    </ul>
+</div>
+
+<div class="card">
+    <div class="card-title">适用场景</div>
+    <ul>
+        <li>使用 OpenClaw 等高权限 AI Agent 的企业</li>
+        <li>需要自动化运维的安全团队</li>
+        <li>Web3/金融场景的链上操作团队</li>
+        <li>关注 AI 安全的研究者</li>
+    </ul>
+</div>
+
+<div class="card">
+    <div class="card-title">领域趋势</div>
+    <div class="trend">
+        <div class="trend-title">OWASP 智能体安全 Top 10</div>
+        <p style="color:#666;font-size:12px;margin:5px 0;">目标劫持 | 工具滥用 | 供应链漏洞 | 提示词注入</p>
+    </div>
+    <div class="trend">
+        <div class="trend-title">技术方向</div>
+        <p style="color:#666;font-size:12px;margin:5px 0;">零信任 + 持续验证 + 自动巡检</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">数据统计</div>
+    <div style="display:flex;justify-content:space-around;">
+        <div class="stat"><div class="stat-num">10</div><div class="stat-label">模块</div></div>
+        <div class="stat"><div class="stat-num">100+</div><div class="stat-label">规则</div></div>
+        <div class="stat"><div class="stat-num">50+</div><div class="stat-label">文档</div></div>
+    </div>
+</div>
+
+<div class="qr-section">
+    <div class="qr-placeholder">[二维码]</div>
+    <p style="margin:0;">扫码关注「小东安全日记」</p>
+    <p style="color:#999;font-size:11px;margin:5px 0;">获取更多 AI 安全干货</p>
+</div>
+
+<div class="footer">
+    <p>📧 286402937@qq.com</p>
+    <p>Gitee: gitee.com/caidongyun/agent-security-guide</p>
+    <p>© 2026 蔡东赟 | MIT License</p>
+</div>
+</body>
+</html>

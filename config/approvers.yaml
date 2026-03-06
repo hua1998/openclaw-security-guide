@@ -1,0 +1,55 @@
+# OpenClaw 审批人配置模板
+# 用途：复制并修改，替换飞书 ID
+
+approvers:
+  # 按角色配置
+  by_role:
+    developer:
+      level_1: "ou_xxx"  # 替换为团队主管飞书 ID
+      level_2: "ou_yyy"  # 替换为运维主管飞书 ID
+    
+    devops:
+      level_1: "ou_yyy"  # 替换为运维主管飞书 ID
+      level_2: "ou_zzz"  # 替换为 CTO 飞书 ID
+    
+    default:
+      level_1: "ou_security"  # 替换为安全团队飞书 ID
+  
+  # 按环境配置
+  by_environment:
+    production:
+      approver: "ou_cto"  # 替换为 CTO 飞书 ID
+      timeout: 15m
+    
+    staging:
+      approver: "ou_lead"  # 替换为团队主管飞书 ID
+      timeout: 30m
+    
+    test:
+      approver: auto_approve
+      timeout: 0m
+  
+  # 超时升级
+  escalation:
+    timeout: 30m
+    escalate_to: level_2
+    final_escalate: security_team
+  
+  # 自动审批规则
+  auto_approve:
+    # 规则 1: 测试环境操作
+    - condition: environment == "test"
+      action: approve
+    
+    # 规则 2: 低风险 + 可信用户
+    - condition: risk_score < 30 AND user_trust >= 80
+      action: approve
+    
+    # 规则 3: 重复请求
+    - condition: same_request_within(1h) AND approved_before
+      action: approve
+    
+    # 规则 4: 紧急故障
+    - condition: severity == "P0" AND user_role == "oncall"
+      action: approve
+      notify: team_lead

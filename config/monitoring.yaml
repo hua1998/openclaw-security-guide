@@ -1,0 +1,121 @@
+# OpenClaw 监控配置模板
+# 用途：复制并修改，替换 Webhook 地址
+
+# 通知配置
+notifications:
+  feishu:
+    enabled: true
+    webhook: "https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_WEBHOOK_URL"
+  
+  email:
+    enabled: true
+    smtp_server: "smtp.example.com"
+    smtp_port: 587
+    username: "alerts@example.com"
+    password: "YOUR_PASSWORD"
+    recipients:
+      - "security@example.com"
+      - "ops@example.com"
+  
+  sms:
+    enabled: false
+    provider: "aliyun"
+    phone_numbers:
+      - "13800138000"  # 安全负责人
+      - "13900139000"  # 运维负责人
+
+# 监控指标
+metrics:
+  # 安全指标
+  security_incidents:
+    enabled: true
+    target: 0
+    alert_threshold: 1
+  
+  audit_log_completeness:
+    enabled: true
+    target: 100%
+    alert_threshold: 95%
+  
+  policy_violations:
+    enabled: true
+    target: "<10/月"
+    alert_threshold: "20/月"
+  
+  # 效率指标
+  auto_approval_rate:
+    enabled: true
+    target: 70%
+    alert_threshold: 50%
+  
+  false_positive_rate:
+    enabled: true
+    target: "<1%"
+    alert_threshold: "<5%"
+  
+  system_availability:
+    enabled: true
+    target: 99.9%
+    alert_threshold: 99%
+  
+  # 响应指标
+  avg_response_time:
+    enabled: true
+    target: 10m
+    alert_threshold: 30m
+  
+  approval_timeout_rate:
+    enabled: true
+    target: "<5%"
+    alert_threshold: "<10%"
+
+# 告警规则
+alerts:
+  # P0 紧急告警
+  p0_rules:
+    - name: 安全事件
+      condition: security_incidents > 0
+      severity: P0
+      notify: [feishu, sms]
+    
+    - name: 系统不可用
+      condition: system_availability < 99%
+      severity: P0
+      notify: [feishu, sms]
+  
+  # P1 高优先级告警
+  p1_rules:
+    - name: 审批超时
+      condition: pending_approval > 30m
+      severity: P1
+      notify: [feishu]
+    
+    - name: 自动审批率低
+      condition: auto_approval_rate < 50%
+      severity: P1
+      notify: [feishu]
+  
+  # P2 中优先级告警
+  p2_rules:
+    - name: 误伤率高
+      condition: false_positive_rate > 5%
+      severity: P2
+      notify: [feishu]
+    
+    - name: 响应时间慢
+      condition: avg_response_time > 30m
+      severity: P2
+      notify: [feishu]
+  
+  # P3 低优先级告警
+  p3_rules:
+    - name: 审计日志不完整
+      condition: audit_log_completeness < 95%
+      severity: P3
+      notify: [email]
+
+# 告警聚合
+aggregation:
+  enabled: true
+  window: 5m
+  max_alerts: 10
