@@ -269,6 +269,177 @@ def check_channels(config):
     return issues
 
 
+def check_supply_chain(config):
+    """供应链安全检测（针对智能办公场景）"""
+    issues = []
+    
+    # 插件管理
+    plugins = config.get("plugins", {})
+    entries = plugins.get("entries", {})
+    
+    # 检查插件来源
+    for plugin_name, plugin_config in entries.items():
+        if isinstance(plugin_config, dict):
+            source = plugin_config.get("source", "")
+            if "github.com" in source and not source.startswith("https://github.com/openclaw-security/"):
+                issues.append({
+                    "risk": "medium",
+                    "category": "supply_chain",
+                    "check": f"plugins.entries.{plugin_name}.source",
+                    "expected": "官方插件或可信来源",
+                    "actual": source,
+                    "description": f"插件 {plugin_name} 来源非官方，存在供应链风险"
+                })
+    
+    # 技能包检查
+    skills = config.get("skills", {})
+    allow = skills.get("allow", [])
+    if not allow:
+        issues.append({
+            "risk": "high",
+            "category": "supply_chain",
+            "check": "skills.allow",
+            "expected": "明确允许的技能包列表",
+            "actual": "空",
+            "description": "未设置技能包白名单，可能引入恶意技能包"
+        })
+    
+    return issues
+
+
+def check_internet_exposure(config):
+    """互联网暴露检测"""
+    issues = []
+    
+    # 网络配置
+    network = config.get("network", {})
+    allow_external = network.get("allow_external", False)
+    
+    if allow_external:
+        issues.append({
+            "risk": "critical",
+            "category": "network",
+            "check": "network.allow_external",
+            "expected": False,
+            "actual": True,
+            "description": "允许外部网络访问，存在互联网暴露风险"
+        })
+    
+    # 网关绑定
+    gateway = config.get("gateway", {})
+    bind = gateway.get("bind", "")
+    if bind and bind not in ["loopback", "127.0.0.1"]:
+        issues.append({
+            "risk": "critical",
+            "category": "network",
+            "check": "gateway.bind",
+            "expected": "loopback 或 127.0.0.1",
+            "actual": bind,
+            "description": "网关绑定到非本地地址，存在互联网暴露风险"
+        })
+    
+    return issues
+
+
+def check_privilege(config):
+    """权限控制检测（最小权限原则）"""
+    issues = []
+    
+    # 执行权限
+    exec_config = config.get("tools", {}).get("exec", {})
+    if exec_config.get("security") != "deny":
+        issues.append({
+            "risk": "critical",
+            "category": "privilege",
+            "check": "tools.exec.security",
+            "expected": "deny",
+            "actual": exec_config.get("security", "not set"),
+            "description": "未禁用直接执行命令，权限过大"
+        })
+    
+    # 工作区访问
+    sandbox = config.get("agents", {}).get("defaults", {}).get("sandbox", {})
+    workspace_access = sandbox.get("workspaceAccess", "none")
+    if workspace_access == "rw":
+        issues.append({
+            "risk": "medium",
+            "category": "privilege",
+            "check": "agents.defaults.sandbox.workspaceAccess",
+            "expected": "none or ro",
+            "actual": workspace_access,
+            "description": "沙箱工作区权限过大，建议只读"
+        })
+    
+    return issues
+
+
+def check_social_engineering(config):
+    """社会工程学攻击防范检测"""
+    issues = []
+    
+    # 提示词安全
+    prompt_security = config.get("security", {}).get("prompt_security", {})
+    injection_detection = prompt_security.get("injection_detection", False)
+    
+    if not injection_detection:
+        issues.append({
+            "risk": "high",
+            "category": "social_engineering",
+            "check": "security.prompt_security.injection_detection",
+            "expected": True,
+            "actual": False,
+            "description": "未启用提示词注入检测，易受社会工程学攻击"
+        })
+    
+    # 浏览器安全
+    browser = config.get("browser", {})
+    sandbox_enabled = browser.get("sandbox", False)
+    
+    if not sandbox_enabled:
+        issues.append({
+            "risk": "medium",
+            "category": "social_engineering",
+            "check": "browser.sandbox",
+            "expected": True,
+            "actual": False,
+            "description": "未启用浏览器沙箱，易受浏览器劫持"
+        })
+    
+    return issues
+
+
+def check_compliance(config):
+    """合规性检测"""
+    issues = []
+    
+    # 审计日志
+    audit_logging = config.get("security", {}).get("audit_logging", {})
+    enabled = audit_logging.get("enabled", False)
+    retention_days = audit_logging.get("retention_days", 0)
+    
+    if not enabled:
+        issues.append({
+            "risk": "high",
+            "category": "compliance",
+            "check": "security.audit_logging.enabled",
+            "expected": True,
+            "actual": False,
+            "description": "未启用审计日志，不符合合规要求"
+        })
+    
+    if retention_days < 90:
+        issues.append({
+            "risk": "medium",
+            "category": "compliance",
+            "check": "security.audit_logging.retention_days",
+            "expected": ">= 90",
+            "actual": retention_days,
+            "description": "审计日志保留期限不足，不符合合规要求"
+        })
+    
+    return issues
+
+
 def calculate_risk_score(issues):
     """计算风险评分"""
     risk_weights = {
@@ -297,8 +468,13 @@ def check_all(config):
     all_issues.extend(check_session(config))
     all_issues.extend(check_tools(config))
     all_issues.extend(check_network(config))
+    all_issues.extend(check_internet_exposure(config))  # 新增：互联网暴露检测
     all_issues.extend(check_sandbox(config))
     all_issues.extend(check_channels(config))
+    all_issues.extend(check_supply_chain(config))  # 新增：供应链安全检测
+    all_issues.extend(check_privilege(config))  # 新增：权限控制检测
+    all_issues.extend(check_social_engineering(config))  # 新增：社会工程学攻击防范检测
+    all_issues.extend(check_compliance(config))  # 新增：合规性检测
     return all_issues
 
 
@@ -368,8 +544,31 @@ def main():
             },
             "agents": {
                 "defaults": {
-                    "sandbox": {"mode": "non-main", "scope": "agent"}
+                    "sandbox": {
+                        "mode": "non-main", 
+                        "scope": "agent",
+                        "workspaceAccess": "ro",
+                        "docker": {"network": "bridge"}
+                    }
                 }
+            },
+            "network": {
+                "allow_external": False
+            },
+            "security": {
+                "prompt_security": {
+                    "injection_detection": True
+                },
+                "audit_logging": {
+                    "enabled": True,
+                    "retention_days": 90
+                }
+            },
+            "browser": {
+                "sandbox": True
+            },
+            "skills": {
+                "allow": []  # 建议填写具体的可信技能包
             }
         }
         print(json.dumps(baseline, indent=2))
