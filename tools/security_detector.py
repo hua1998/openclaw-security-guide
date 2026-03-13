@@ -408,6 +408,251 @@ def check_social_engineering(config):
     return issues
 
 
+def check_maestro_lm(config):
+    """MAESTRO 基础模型层检测"""
+    issues = []
+    
+    # 系统提示泄漏检测
+    bootstrap = config.get("agents", {}).get("bootstrap", {})
+    if not bootstrap.get("protect_prompts", False):
+        issues.append({
+            "risk": "medium",
+            "category": "maestro_lm",
+            "check": "agents.bootstrap.protect_prompts",
+            "expected": True,
+            "actual": False,
+            "description": "未启用系统提示保护，可能导致系统提示泄漏"
+        })
+    
+    # 模型 API 密钥泄露检测
+    model = config.get("model", {})
+    api_key = model.get("apiKey", "")
+    if api_key and not model.get("useKeychain", False):
+        issues.append({
+            "risk": "critical",
+            "category": "maestro_lm",
+            "check": "model.useKeychain",
+            "expected": True,
+            "actual": False,
+            "description": "模型 API 密钥直接存储在配置中，存在泄露风险"
+        })
+    
+    # 多回合上下文越狱检测
+    session = config.get("session", {})
+    if not session.get("compaction", {}).get("enabled", False):
+        issues.append({
+            "risk": "high",
+            "category": "maestro_lm",
+            "check": "session.compaction.enabled",
+            "expected": True,
+            "actual": False,
+            "description": "未启用会话压缩，可能导致多回合上下文越狱"
+        })
+    
+    return issues
+
+
+def check_maestro_do(config):
+    """MAESTRO 数据操作层检测"""
+    issues = []
+    
+    # 凭证存储安全检测
+    pairing = config.get("pairing", {})
+    if not pairing.get("secureStorage", False):
+        issues.append({
+            "risk": "critical",
+            "category": "maestro_do",
+            "check": "pairing.secureStorage",
+            "expected": True,
+            "actual": False,
+            "description": "未启用安全存储，凭证可能以明文形式存储"
+        })
+    
+    # 状态目录权限检测
+    state = config.get("state", {})
+    directory = state.get("directory", "~/.openclaw")
+    if not state.get("restrictPermissions", False):
+        issues.append({
+            "risk": "high",
+            "category": "maestro_do",
+            "check": "state.restrictPermissions",
+            "expected": True,
+            "actual": False,
+            "description": "未限制状态目录权限，可能导致全局可读"
+        })
+    
+    # 数据加密检测
+    security = config.get("security", {})
+    if not security.get("dataEncryption", {}).get("enabled", False):
+        issues.append({
+            "risk": "medium",
+            "category": "maestro_do",
+            "check": "security.dataEncryption.enabled",
+            "expected": True,
+            "actual": False,
+            "description": "未启用数据加密，敏感数据可能未加密存储"
+        })
+    
+    return issues
+
+
+def check_maestro_tu(config):
+    """MAESTRO 工具使用层检测"""
+    issues = []
+    
+    # 工具权限检测
+    tools = config.get("tools", {})
+    if not tools.get("permissions", {}).get("enabled", False):
+        issues.append({
+            "risk": "high",
+            "category": "maestro_tu",
+            "check": "tools.permissions.enabled",
+            "expected": True,
+            "actual": False,
+            "description": "未启用工具权限控制，可能导致权限滥用"
+        })
+    
+    # 危险工具使用检测
+    deny = tools.get("deny", [])
+    dangerous_tools = ["exec", "elevated", "file_system", "network"]
+    for tool in dangerous_tools:
+        if tool not in deny:
+            issues.append({
+                "risk": "medium",
+                "category": "maestro_tu",
+                "check": f"tools.deny",
+                "expected": f"包含 {tool}",
+                "actual": deny,
+                "description": f"未禁用危险工具 {tool}"
+            })
+    
+    return issues
+
+
+def check_maestro_ni(config):
+    """MAESTRO 网络交互层检测"""
+    issues = []
+    
+    # 网络策略检测
+    network = config.get("network", {})
+    if network.get("mode", "whitelist") != "whitelist":
+        issues.append({
+            "risk": "high",
+            "category": "maestro_ni",
+            "check": "network.mode",
+            "expected": "whitelist",
+            "actual": network.get("mode"),
+            "description": "网络策略未设置为白名单模式，可能导致未授权网络访问"
+        })
+    
+    # 外部网络访问检测
+    if network.get("allow_external", False):
+        issues.append({
+            "risk": "critical",
+            "category": "maestro_ni",
+            "check": "network.allow_external",
+            "expected": False,
+            "actual": True,
+            "description": "允许外部网络访问，存在安全风险"
+        })
+    
+    return issues
+
+
+def check_maestro_se(config):
+    """MAESTRO 沙箱逃逸层检测"""
+    issues = []
+    
+    # 沙箱配置检测
+    sandbox = config.get("agents", {}).get("defaults", {}).get("sandbox", {})
+    if sandbox.get("mode", "off") == "off":
+        issues.append({
+            "risk": "critical",
+            "category": "maestro_se",
+            "check": "agents.defaults.sandbox.mode",
+            "expected": "non-main or all",
+            "actual": "off",
+            "description": "未启用沙箱隔离，存在沙箱逃逸风险"
+        })
+    
+    # 沙箱资源限制检测
+    resource_limits = sandbox.get("resource_limits", {})
+    if not resource_limits.get("enabled", False):
+        issues.append({
+            "risk": "medium",
+            "category": "maestro_se",
+            "check": "agents.defaults.sandbox.resource_limits.enabled",
+            "expected": True,
+            "actual": False,
+            "description": "未启用沙箱资源限制，可能导致资源耗尽攻击"
+        })
+    
+    return issues
+
+
+def check_maestro_pe(config):
+    """MAESTRO 持久化层检测"""
+    issues = []
+    
+    # 配置文件权限检测
+    config_file = config.get("config", {})
+    if not config_file.get("restrictPermissions", False):
+        issues.append({
+            "risk": "high",
+            "category": "maestro_pe",
+            "check": "config.restrictPermissions",
+            "expected": True,
+            "actual": False,
+            "description": "未限制配置文件权限，可能导致配置泄露"
+        })
+    
+    # 持久化凭证检测
+    credentials = config.get("credentials", {})
+    if not credentials.get("secureStorage", False):
+        issues.append({
+            "risk": "critical",
+            "category": "maestro_pe",
+            "check": "credentials.secureStorage",
+            "expected": True,
+            "actual": False,
+            "description": "未启用凭证安全存储，可能导致凭证持久化泄露"
+        })
+    
+    return issues
+
+
+def check_maestro_lm2(config):
+    """MAESTRO 横向移动层检测"""
+    issues = []
+    
+    # 跨通道攻击检测
+    channels = config.get("channels", {})
+    for channel_name, channel_config in channels.items():
+        if not channel_config.get("isolate", False):
+            issues.append({
+                "risk": "medium",
+                "category": "maestro_lm2",
+                "check": f"channels.{channel_name}.isolate",
+                "expected": True,
+                "actual": False,
+                "description": f"{channel_name} 通道未启用隔离，可能导致跨通道攻击"
+            })
+    
+    # 权限提升检测
+    auth = config.get("gateway", {}).get("auth", {})
+    if auth.get("mode") != "token":
+        issues.append({
+            "risk": "critical",
+            "category": "maestro_lm2",
+            "check": "gateway.auth.mode",
+            "expected": "token",
+            "actual": auth.get("mode"),
+            "description": "未启用 token 认证，可能导致权限提升攻击"
+        })
+    
+    return issues
+
+
 def check_compliance(config):
     """合规性检测"""
     issues = []
@@ -475,6 +720,14 @@ def check_all(config):
     all_issues.extend(check_privilege(config))  # 新增：权限控制检测
     all_issues.extend(check_social_engineering(config))  # 新增：社会工程学攻击防范检测
     all_issues.extend(check_compliance(config))  # 新增：合规性检测
+    # MAESTRO 框架检测
+    all_issues.extend(check_maestro_lm(config))  # MAESTRO 基础模型层检测
+    all_issues.extend(check_maestro_do(config))  # MAESTRO 数据操作层检测
+    all_issues.extend(check_maestro_tu(config))  # MAESTRO 工具使用层检测
+    all_issues.extend(check_maestro_ni(config))  # MAESTRO 网络交互层检测
+    all_issues.extend(check_maestro_se(config))  # MAESTRO 沙箱逃逸层检测
+    all_issues.extend(check_maestro_pe(config))  # MAESTRO 持久化层检测
+    all_issues.extend(check_maestro_lm2(config))  # MAESTRO 横向移动层检测
     return all_issues
 
 
@@ -534,13 +787,21 @@ def main():
                 "bind": "loopback",
                 "auth": {"mode": "token", "token": "YOUR_TOKEN_HERE"}
             },
-            "session": {"dmScope": "per-channel-peer"},
+            "session": {
+                "dmScope": "per-channel-peer",
+                "compaction": {
+                    "enabled": True
+                }
+            },
             "tools": {
                 "profile": "messaging",
-                "deny": ["group:automation", "group:runtime"],
+                "deny": ["group:automation", "group:runtime", "exec", "elevated", "file_system", "network"],
                 "fs": {"workspaceOnly": True},
                 "exec": {"security": "deny", "ask": "always"},
-                "elevated": {"enabled": False}
+                "elevated": {"enabled": False},
+                "permissions": {
+                    "enabled": True
+                }
             },
             "agents": {
                 "defaults": {
@@ -548,12 +809,19 @@ def main():
                         "mode": "non-main", 
                         "scope": "agent",
                         "workspaceAccess": "ro",
-                        "docker": {"network": "bridge"}
+                        "docker": {"network": "bridge"},
+                        "resource_limits": {
+                            "enabled": True
+                        }
                     }
+                },
+                "bootstrap": {
+                    "protect_prompts": True
                 }
             },
             "network": {
-                "allow_external": False
+                "allow_external": False,
+                "mode": "whitelist"
             },
             "security": {
                 "prompt_security": {
@@ -562,6 +830,9 @@ def main():
                 "audit_logging": {
                     "enabled": True,
                     "retention_days": 90
+                },
+                "dataEncryption": {
+                    "enabled": True
                 }
             },
             "browser": {
@@ -569,6 +840,29 @@ def main():
             },
             "skills": {
                 "allow": []  # 建议填写具体的可信技能包
+            },
+            "model": {
+                "useKeychain": True
+            },
+            "pairing": {
+                "secureStorage": True
+            },
+            "state": {
+                "restrictPermissions": True
+            },
+            "config": {
+                "restrictPermissions": True
+            },
+            "credentials": {
+                "secureStorage": True
+            },
+            "channels": {
+                "discord": {
+                    "isolate": True
+                },
+                "telegram": {
+                    "isolate": True
+                }
             }
         }
         print(json.dumps(baseline, indent=2))

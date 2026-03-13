@@ -55,7 +55,7 @@ python tools/security_hardening.py --config config/openclaw.json
 
 ---
 
-## 📚 10大安全模块
+## 📚 11大安全模块
 
 | 模块 | 内容 |
 |------|------|
@@ -69,6 +69,7 @@ python tools/security_hardening.py --config config/openclaw.json
 | [08-新型风险](08-新型风险/) | 提示词注入、知识库污染、对抗攻击 |
 | [09-红蓝对抗](09-红蓝对抗/) | 红队攻击、蓝队防御、对抗演练 |
 | [10-实战演练](10-实战演练/) | 场景案例、应急响应、复盘总结 |
+| [11-MAESTRO框架](11-MAESTRO框架/) | 7层智能AI威胁模型检测、基础模型层、数据操作层、工具使用层、网络交互层、沙箱逃逸层、持久化层、横向移动层 |
 
 ---
 
