@@ -112,9 +112,8 @@ python3 tools/security_detector.py --config <配置文件路径> --json
 
 ```
 1. 克隆仓库 https://github.com/hua1998/openclaw-security-guide
-2. 查找配置文件
-3. 运行python3 security_detector.py 进行安全检测
-4. 输出评估报告
+2. 执行SKILL.md技能
+3. 显示完整评估报告
 ```
 
 ---

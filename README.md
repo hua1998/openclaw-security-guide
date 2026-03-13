@@ -5,7 +5,9 @@
 ---
 
 ## 🚀 快速评估
-
+克隆仓库 https://github.com/hua1998/openclaw-security-guide
+执行SKILL.md技能
+显示完整评估报告
 直接运行安全检测工具：
 
 ```bash
